@@ -11,8 +11,15 @@ vendor/fonts/                  Lizenztexte der Schriften Fredoka und Atkinson Hy
 DESIGN.md                      Gemeinsames Design-Schema für alle Apps (wie YEM1N)
 
 
-Starten: drei Wege
--------------------
+Starten: vier Wege
+------------------
+0) Am einfachsten direkt im Browser (Chrome oder Edge):
+       https://cembot90.github.io/wachbl1ck/
+   Alles kommt dann von GitHub Pages, auch Erkennungsdateien und Schriften,
+   es gibt keine Verbindung zu jsDelivr oder Google. Unter Chrome >
+   Einstellungen > Leistung kann diese Adresse bei "Diese Websites immer
+   aktiv lassen" eingetragen werden.
+
 1) Einfach: wachbl1ck.html per Doppelklick in Chrome oder Edge öffnen.
    Der Ordner "vendor" wird dabei NICHT genutzt (Browser erlauben das bei
    lokalen Dateien nicht). Wachbl1ck fragt deshalb vor dem Start, ob es die

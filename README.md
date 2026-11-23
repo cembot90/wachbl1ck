@@ -13,7 +13,8 @@ ohne Konto und ohne Cloud.
 
 ## Starten
 
-`wachbl1ck.html` in Chrome oder Edge öffnen. Mehr dazu, auch zum Start ohne
+Direkt im Browser: **https://cembot90.github.io/wachbl1ck/** (Chrome oder Edge).
+Oder `wachbl1ck.html` herunterladen und öffnen. Mehr dazu, auch zum Start ohne
 Verbindung zu Dritten, steht in [LIESMICH.txt](LIESMICH.txt).
 
 ## Design
