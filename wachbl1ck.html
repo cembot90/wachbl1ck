@@ -1071,6 +1071,14 @@ function measure(lm, W, H, cats) {
   return { face: true, ear, mar, head, yaw, ...blendValues(cats) };
 }
 
+/** Augenöffnung (Anteil von normal), unter der der Sekundenschlaf-Alarm anschlägt.
+ *  Mit eingerichteter Tastatur tiefer als die normale Schwelle, aber nie unter 30 %, damit echter Sekundenschlaf immer auslöst. */
+const ALARM_FLOOR = 0.3;
+function alarmFactor(set) {
+  const kb = set.keyboard;
+  return kb ? clamp(kb.earRatio * 0.7, Math.min(ALARM_FLOOR, set.closeFactor), set.closeFactor) : set.closeFactor;
+}
+
 /* ------------------------------------------------------------------ *
  *  Auswertung (reine Logik, ohne DOM)
  * ------------------------------------------------------------------ */
@@ -1104,10 +1112,7 @@ class FatigueEngine {
   closedFor(t) { return this.closed ? t - this.closedStart : 0; }
 
   /** Ab dieser Augenöffnung (Anteil von normal) schlägt der Alarm an. Ohne Tastatur gleich der normalen Schwelle. */
-  deepFactor() {
-    const kb = this.settings.keyboard;
-    return kb ? Math.min(this.settings.closeFactor, kb.earRatio * 0.7) : this.settings.closeFactor;
-  }
+  deepFactor() { return alarmFactor(this.settings); }
   /** Blick auf die Tastatur: Blick deutlich nach unten, Lider aber nicht ganz zu. Nur mit eingerichteter Tastatur. */
   isGlance(ear, blink, lookDown, ratioZone) {
     const kb = this.settings.keyboard;
@@ -1701,7 +1706,7 @@ function renderSetup() {
       : p === 'grace' ? 'Jetzt auf die Tastatur schauen und tippen.'
       : p === 'measure' ? (setup.noFace ? 'Die Kamera sieht dein Gesicht gerade nicht. Das ist in Ordnung, dann gibt es beim Tippen auch keinen Alarm.' : 'Messe … bitte weiter auf die Tastatur schauen und tippen.')
       : setup.result && kb
-      ? (kb.earRatio * 0.7 >= settings.closeFactor
+      ? (alarmFactor(settings) >= settings.closeFactor
         ? `Gespeichert: Deine Augen bleiben beim Blick auf die Tastatur gut offen (${nf0.format(kb.earRatio * 100)} %). Wachbl1ck erkennt den Blick nach unten jetzt trotzdem und wertet ihn nicht als Müdigkeit.`
         : `Gespeichert: Beim Blick auf die Tastatur sind deine Augen zu ${nf0.format(kb.earRatio * 100)} % offen. Wachbl1ck schlägt jetzt erst Alarm, wenn sie wirklich zu sind, und wertet den Blick nach unten nicht als Müdigkeit.`)
       : 'Die Kamera hat dein Gesicht beim Blick auf die Tastatur nicht gesehen. Dann gibt es dabei auch keinen Alarm, einrichten musst du nichts.';
@@ -1818,7 +1823,7 @@ function renderZones() {
     zones.splice(i, 1); saveZones(); renderZones(); addLog(`${z.name} entfernt`, '', 'info');
   }));
   const kb = settings.keyboard;
-  if (kb) mk('Tastatur', `Augen beim Blick nach unten ${nf0.format(kb.earRatio * 100)} % · Alarm erst unter ${nf0.format(Math.min(settings.closeFactor, kb.earRatio * 0.7) * 100)} %`, kb.learned, () => {
+  if (kb) mk('Tastatur', `Augen beim Blick nach unten ${nf0.format(kb.earRatio * 100)} % · Alarm erst unter ${nf0.format(alarmFactor(settings) * 100)} %`, kb.learned, () => {
     settings.keyboard = null; saveSettings(); renderZones(); addLog('Tastatur entfernt', '', 'info');
   });
   el.btnZonesClear.disabled = zones.length === 0;
@@ -1829,8 +1834,8 @@ function learnFromInfo(info, force = false) {
   if (!calib || !info || (mode !== 'camera' && !force)) return;
   if (Math.abs(info.dYaw) < 10 && Math.abs(info.dPitch) < 10) {
     const r = info.earMed / calib.earOpen;
-    if (r >= 0.2) {
-      // Augen waren nur halb zu: das war der Blick nach unten, nicht Müdigkeit
+    if (r >= 0.4) {
+      // Augen waren deutlich halb offen: das war der Blick nach unten, nicht Müdigkeit
       const old = settings.keyboard;
       settings.keyboard = {
         earRatio: clamp(Math.min(old ? old.earRatio : 1, r), 0.1, 1.2),
@@ -3474,7 +3479,7 @@ if (consent.history) { renderTopicChoices(); renderTopicLive(); } else validateT
 
 // Für Tests in der Browser-Konsole
 window.Wachblick = {
-  FatigueEngine, measure, blendValues, demoSample, zones, settings, learnFromInfo, hist, sanitizeImport, recMaybeFlush, FocusTracker, attentionSpan, FOCUS, setTopic, focus, spanTick, topicStats, HistoryStore, attachMini, applyFarbwelt,
+  FatigueEngine, measure, blendValues, alarmFactor, demoSample, zones, settings, learnFromInfo, hist, sanitizeImport, recMaybeFlush, FocusTracker, attentionSpan, FOCUS, setTopic, focus, spanTick, topicStats, HistoryStore, attachMini, applyFarbwelt,
   get state() {
     return { mode, calib, delegateUsed, sourceUsed, frameMode, fps, throttled, lastSample, pose: engine?.pose,
       metrics: engine ? engine.metrics(performance.now()) : null, alarm: engine?.alarm ?? false, events: eventHistory.slice(), consent: consent.rec };
