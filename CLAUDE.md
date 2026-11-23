@@ -32,5 +32,11 @@ Beispieldaten, Handybreite 390 px ohne seitliches Scrollen.
 
 ## Offen
 
+- Teams-Anrufe automatisch erkennen: Eine Webseite sieht Teams nicht. Möglich
+  wären die lokale Geräte-Schnittstelle von Teams (ws://localhost:8124,
+  inoffiziell, muss in Teams unter Datenschutz > API verwalten erlaubt sein)
+  oder Microsoft Graph Presence (braucht eine App-Registrierung in Entra ID).
+  Erst prüfen, ob "API verwalten" bei Cem verfügbar ist. Die Pause
+  (`startPause`/`resumePause`) ist der Anschluss dafür.
 - Grenzwerte (2 Minuten weg, 1 Minute Blick weg, Index 30) sind erste
   Annahmen und sollen nach echter Nutzung angepasst werden.

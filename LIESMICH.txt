@@ -1,4 +1,4 @@
-WACHBL1CK 2.5: Müdigkeitserkennung per Webcam
+WACHBL1CK 2.6: Müdigkeitserkennung per Webcam
 ================================================
 
 Inhalt dieses Ordners
@@ -89,6 +89,22 @@ Verlauf (Logs) speichern, exportieren, einlesen
 - Der Verlauf liegt je Browser und je Adresse getrennt: file://, localhost
   und ein Webserver haben jeweils ihren eigenen Speicher. Zum Umziehen
   exportieren und dort einlesen.
+
+
+Pause, zum Beispiel für Anrufe
+------------------------------
+- Oben "Pause" klicken und 15, 30 oder 60 Minuten oder "Bis ich weitermache"
+  wählen. Im Mini-Fenster geht das über die Auswahl "Pause …".
+- Während der Pause ist die Kamera aus. Es gibt keinen Alarm (also auch
+  keinen Ton im Headset) und keine Messung. Teams oder andere Apps haben die
+  Kamera dann für sich.
+- Danach geht es von selbst weiter, ohne neue Kalibrierung, auch wenn
+  Wachbl1ck im Hintergrund liegt. "Weiter" beendet die Pause sofort.
+- Übernimmt eine andere App die Kamera ganz, pausiert Wachbl1ck von selbst
+  ("Kamera belegt") und versucht es alle 5 Sekunden wieder. Das ist keine
+  Anruferkennung: Meist teilen sich Teams und Browser die Kamera einfach.
+- Pausen stehen im Verlauf. Ältere Wachbl1ck-Versionen lassen sie beim
+  Einlesen weg.
 
 
 Themen und Aufmerksamkeit

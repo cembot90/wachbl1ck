@@ -479,6 +479,7 @@ body.mini::before { display: none; }
 .mini-wrap[data-alarm="true"] .mini-text { color: var(--navy); }
 .mini-topic { display: flex; gap: 6px; }
 .mini-topic select, .mini-topic input { flex: 1 1 0; min-width: 0; padding: 6px 10px; border-radius: 999px; font-size: 0.82rem; }
+.mini-topic .btn { flex: 0 0 auto; }
 
 @media (prefers-reduced-motion: reduce) {
   .alarm { animation: none; }
@@ -491,6 +492,7 @@ body.mini::before { display: none; }
   <div class="kopf-innen">
     <div class="marke"><span class="marke-kachel">WACHBL1CK</span><span class="marke-zusatz">Müdigkeitserkennung per Webcam</span></div>
     <div class="actions">
+      <button type="button" class="btn small" id="btnPause" hidden>Pause</button>
       <button type="button" class="btn small" id="btnMini" hidden>Mini-Fenster</button>
       <button type="button" class="btn small" id="btnSetup" hidden>Monitor einrichten</button>
       <button type="button" class="btn small" id="btnCalib" hidden>Neu kalibrieren</button>
@@ -573,6 +575,12 @@ body.mini::before { display: none; }
           <strong>Augen auf!</strong>
           <span id="alarmText">Deine Augen sind seit über 1,5 Sekunden geschlossen.</span>
           <button type="button" class="btn on-dark" id="alarmFalse">Fehlalarm: Ich habe nur woanders hingeschaut</button>
+        </div>
+
+        <div class="overlay-center setup" id="pauseOverlay" hidden>
+          <h3 id="pauseTitle">Pause</h3>
+          <p id="pauseText">Die Kamera ist aus. Es gibt keinen Alarm und keine Messung.</p>
+          <div class="row"><button type="button" class="btn cta" id="pauseResume">Weiter messen</button></div>
         </div>
 
         <div class="overlay-center msg" id="msg" hidden>
@@ -821,7 +829,7 @@ body.mini::before { display: none; }
     <button type="button" class="linkbtn" data-open="dlgPrivacy">Datenschutz</button>
     <button type="button" class="linkbtn" data-open="dlgImprint">Impressum</button>
     <button type="button" class="linkbtn" data-open="dlgStorage">Speicher-Einstellungen</button>
-    <span>Wachbl1ck 2.5</span>
+    <span>Wachbl1ck 2.6</span>
   </nav>
 </div>
 
@@ -848,6 +856,20 @@ body.mini::before { display: none; }
     <form method="dialog" class="legal-actions">
       <button class="btn primary" value="ok">Laden und starten</button>
       <button class="btn" value="cancel">Abbrechen</button>
+    </form>
+  </div>
+</dialog>
+
+<!-- Pause wählen -->
+<dialog class="legal narrow" id="dlgPause" aria-labelledby="pauseDlgTitle">
+  <div class="legal-head"><h2 id="pauseDlgTitle">Pause</h2><button type="button" class="icon-btn" data-close aria-label="Schließen">×</button></div>
+  <div class="legal-body">
+    <p style="margin-top:12px">Während der Pause ist die Kamera aus, es gibt keinen Alarm und keine Messung. Danach geht es von selbst weiter, ohne neue Kalibrierung. Gut für Telefonate und Teams-Anrufe.</p>
+    <form method="dialog" class="legal-actions">
+      <button class="btn primary" value="15">15 Minuten</button>
+      <button class="btn primary" value="30">30 Minuten</button>
+      <button class="btn primary" value="60">60 Minuten</button>
+      <button class="btn" value="0">Bis ich weitermache</button>
     </form>
   </div>
 </dialog>
@@ -900,7 +922,7 @@ body.mini::before { display: none; }
     <p>Rechtsgrundlage ist deine Einwilligung nach § 25 Abs. 1 TDDDG und Art. 6 Abs. 1 lit. a DSGVO. Deine Entscheidung selbst (ja oder nein) wird gespeichert, damit Wachbl1ck nicht erneut fragt. Das ist nach § 25 Abs. 2 Nr. 2 TDDDG ohne Einwilligung zulässig. Die Daten bleiben gespeichert, bis du die Einwilligung widerrufst oder deine Browserdaten löschst. Widerrufen und alles löschen kannst du jederzeit unter „Speicher-Einstellungen“ unten auf der Seite.</p>
 
     <h3>4. Verlauf (freiwillig)</h3>
-    <p>Schaltest du „Verlauf speichern“ ein, legt Wachbl1ck in der IndexedDB deines Browsers ab: pro Minute eine Zusammenfassung (Müdigkeitsindex, PERCLOS, Lidschläge pro Minute, mittlere Lidschlussdauer, Sekunden mit Gesicht im Bild und mit abgewandtem Blick), Ereignisse mit Uhrzeit (zum Beispiel Sekundenschlaf, lange Lidschlüsse, Gähnen, Pausenempfehlungen) sowie Beginn und Ende jeder Messung. Dazu kommen die Themen, die du selbst einträgst, mit den Zeiträumen und Fokusblöcken (Beginn, Ende, wache Minuten). Themennamen können Kunden- oder Projektnamen enthalten, sie bleiben wie alles andere auf deinem Gerät. Bilder und Gesichtspunkte werden nicht gespeichert. Diese Angaben können Rückschlüsse auf deinen Gesundheitszustand zulassen. Sie verlassen dein Gerät nicht und sind für mich nicht einsehbar.</p>
+    <p>Schaltest du „Verlauf speichern“ ein, legt Wachbl1ck in der IndexedDB deines Browsers ab: pro Minute eine Zusammenfassung (Müdigkeitsindex, PERCLOS, Lidschläge pro Minute, mittlere Lidschlussdauer, Sekunden mit Gesicht im Bild und mit abgewandtem Blick), Ereignisse mit Uhrzeit (zum Beispiel Sekundenschlaf, lange Lidschlüsse, Gähnen, Pausenempfehlungen und deine eigenen Pausen) sowie Beginn und Ende jeder Messung. Dazu kommen die Themen, die du selbst einträgst, mit den Zeiträumen und Fokusblöcken (Beginn, Ende, wache Minuten). Themennamen können Kunden- oder Projektnamen enthalten, sie bleiben wie alles andere auf deinem Gerät. Bilder und Gesichtspunkte werden nicht gespeichert. Diese Angaben können Rückschlüsse auf deinen Gesundheitszustand zulassen. Sie verlassen dein Gerät nicht und sind für mich nicht einsehbar.</p>
     <p>Rechtsgrundlage ist deine Einwilligung nach § 25 Abs. 1 TDDDG und Art. 6 Abs. 1 lit. a DSGVO. Einträge, die älter als die gewählte Aufbewahrungsdauer sind (30, 90 oder 365 Tage), löscht Wachbl1ck automatisch. Ausschalten oder „Verlauf löschen“ entfernt den gespeicherten Verlauf sofort. Ohne Einwilligung hält Wachbl1ck den Verlauf nur bis zum Schließen der Seite im Arbeitsspeicher.</p>
     <p>Exportierte Dateien (JSON, CSV) speicherst du selbst und entscheidest selbst, ob du sie weitergibst. Eingelesene Dateien werden nur in diesem Browser verarbeitet.</p>
 
@@ -1500,6 +1522,7 @@ async function startCamera() {
   throttled = false;
   requestWakeLock();
   startFrameSource();
+  watchTrack();
   addLog('Messung gestartet', `${delegateUsed} · Bilder: ${frameMode === 'track' ? 'Kamera direkt' : 'Videoelement'}`, 'info');
   beginCalibration();
   startTicker();
@@ -1589,6 +1612,8 @@ function startDemo() {
 }
 
 function stopAll(silent) {
+  if (pause && mode === 'camera') recEvent('pause', { ts: pause.since, dur: Date.now() - pause.since });
+  pause = null; if (typeof renderPause === 'function') { $('pauseOverlay').hidden = true; $('btnPause').textContent = 'Pause'; }
   if (mode === 'camera') { recMaybeFlush(true); focusStop(Date.now()); }
   recState.sid = null;
   renderTopicLive();
@@ -1617,8 +1642,106 @@ function setStage(kind) {
   el.fps.hidden = kind === 'idle';
   if (kind === 'idle') el.stage.style.aspectRatio = '';
 }
+/* ------------------------------------------------------------------ *
+ *  Pause (zum Beispiel für Anrufe): Kamera aus, kein Alarm, keine Messung, danach weiter ohne neue Kalibrierung
+ * ------------------------------------------------------------------ */
+let pause = null;   // { since, until, reason: 'hand' | 'kamera' }
+let pauseRetryT = 0;
+const pauseUntilText = () => pause && pause.until ? new Date(pause.until).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '';
+function pauseLabel() {
+  if (!pause) return '';
+  if (pause.reason === 'kamera') return 'Kamera belegt, warte';
+  return pause.until ? `Pausiert bis ${pauseUntilText()}` : 'Pausiert';
+}
+function startPause(minutes, reason = 'hand') {
+  if (mode !== 'camera' && mode !== 'demo') return;
+  if (pause) { if (reason === 'hand') { pause.until = minutes ? Date.now() + minutes * 60000 : null; pause.reason = 'hand'; renderPause(); } return; }
+  const now = Date.now();
+  pause = { since: now, until: minutes ? now + minutes * 60000 : null, reason, recalib: mode === 'camera' && (!!calibration || !calib) };
+  pauseRetryT = now;
+  if (engine) { engine.dismissCurrent(performance.now()); }
+  setAlarm(false);
+  calibration = null; el.calib.hidden = true;
+  if (setup) closeSetup();
+  if (mode === 'camera') {
+    recMaybeFlush(true);
+    saveBlock(focus.tracker.end(now, 'pause')); endSpan(now); focus.lastT = null;
+    stopFrameSource();
+    if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+    el.video.srcObject = null; lastLm = null; lastVideoTime = -1;
+    octx.clearRect(0, 0, el.overlay.width, el.overlay.height);
+    releaseWakeLock();
+  }
+  addLog(reason === 'kamera' ? 'Kamera weg, Pause' : 'Pause', pause.until ? `bis ${pauseUntilText()}` : '', 'info');
+  renderPause(); updateButtons();
+}
+async function resumePause() {
+  if (!pause) return;
+  const p = pause;
+  if (mode === 'camera') {
+    try { await reopenCamera(); }
+    catch (err) {
+      if (p.reason !== 'kamera') { p.reason = 'kamera'; renderPause(); addLog('Kamera gerade nicht frei', 'neuer Versuch alle 5 Sekunden', 'warn'); }
+      return;
+    }
+  }
+  pause = null;
+  const now = Date.now();
+  if (mode === 'camera') {
+    if (now - p.since >= 5000) recEvent('pause', { ts: p.since, dur: now - p.since });
+    startSpan(now);
+    runningSince = performance.now(); lastDetectAt = runningSince; throttled = false;
+    requestWakeLock();
+  } else if (mode === 'demo') {
+    demoStart += now - p.since;
+  }
+  if (engine) { engine.lastT = null; engine.earS = null; }
+  addLog('Weiter', `nach ${fmtMin((now - p.since) / 60000)} Pause`, 'ok');
+  if (p.recalib && mode === 'camera') beginCalibration();
+  renderPause(); updateButtons();
+}
+async function reopenCamera() {
+  const s2 = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
+  stream = s2;
+  el.video.srcObject = stream;
+  await new Promise((res) => { if (el.video.readyState >= 1) res(); else el.video.onloadedmetadata = res; });
+  await el.video.play();
+  lastVideoTime = -1;
+  startFrameSource();
+  watchTrack();
+}
+/** Wird die Kamera von einer anderen App übernommen, pausiert Wachbl1ck und versucht es weiter. */
+function watchTrack() {
+  const track = stream && stream.getVideoTracks()[0];
+  if (!track) return;
+  let muteTimer = null;
+  track.addEventListener('ended', () => { if (stream && stream.getVideoTracks()[0] === track && mode === 'camera' && !pause) startPause(null, 'kamera'); });
+  track.addEventListener('mute', () => { clearTimeout(muteTimer); muteTimer = setTimeout(() => { if (track.muted && stream && stream.getVideoTracks()[0] === track && mode === 'camera' && !pause) startPause(null, 'kamera'); }, 3000); });
+  track.addEventListener('unmute', () => clearTimeout(muteTimer));
+}
+function pauseTick() {
+  if (!pause) return;
+  const now = Date.now();
+  if (pause.reason === 'hand' && pause.until && now >= pause.until) { resumePause(); return; }
+  if (pause.reason === 'kamera' && now - pauseRetryT > 5000) { pauseRetryT = now; resumePause(); }
+}
+function renderPause() {
+  const on = !!pause;
+  $('pauseOverlay').hidden = !on;
+  if (on) {
+    $('pauseTitle').textContent = pause.reason === 'kamera' ? 'Kamera belegt' : (pause.until ? `Pause bis ${pauseUntilText()}` : 'Pause');
+    $('pauseText').textContent = pause.reason === 'kamera'
+      ? 'Eine andere App nutzt gerade die Kamera, zum Beispiel Teams. Wachbl1ck macht weiter, sobald sie wieder frei ist.'
+      : 'Die Kamera ist aus. Es gibt keinen Alarm und keine Messung. Danach geht es ohne neue Kalibrierung weiter.';
+    setPill(pauseLabel(), 'idle');
+  }
+  $('btnPause').textContent = on ? 'Weiter' : 'Pause';
+  renderHero(performance.now());
+  updateMini();
+}
 function updateButtons() {
   const running = mode === 'camera' || mode === 'demo' || mode === 'loading';
+  $('btnPause').hidden = !(mode === 'camera' || mode === 'demo');
   el.btnStop.hidden = !running;
   el.btnCalib.hidden = mode !== 'camera';
   const canSetup = mode === 'camera' && !!calib && !calibration && !setup;
@@ -1870,6 +1993,12 @@ function learnFromInfo(info, force = false) {
  * ------------------------------------------------------------------ */
 function tick() {
   const now = performance.now();
+  pauseTick();
+  if (pause) {
+    if (now - lastRender > 1000) { render(now); lastRender = now; }
+    if (mode === 'camera') recMaybeFlush(false);
+    return;
+  }
   if (mode === 'camera' && frameMode === 'video' && landmarker) {
     const v = el.video;
     if (v.readyState >= 2 && v.currentTime !== lastVideoTime) {
@@ -1887,6 +2016,7 @@ function tick() {
 }
 
 function handleSample(now, s) {
+  if (pause) return;
   detCount++;
   lastDetectAt = now;
   lastSample = s;
@@ -1905,7 +2035,7 @@ function watchdog(now) {
   fps = wdT0 ? detCount * 1000 / (now - wdT0) : 0;
   detCount = 0; wdT0 = now;
   el.fps.textContent = `${nf0.format(fps)} Bilder/s${mode === 'camera' ? ' · ' + delegateUsed : ''}`;
-  if (mode !== 'camera' || calibration) { throttled = false; return; }
+  if (mode !== 'camera' || calibration || pause) { throttled = false; return; }
   const bad = now - runningSince > 8000 && (now - lastDetectAt > 2500 || fps < 4);
   if (bad && !throttled) {
     throttled = true;
@@ -2031,10 +2161,14 @@ function buildMini(d) {
     + '<div class="mini-num" id="miniNum">-</div></div>'
     + '<div class="mini-info"><div class="mini-wort" id="miniWord">Bereit</div><div class="mini-text" id="miniText">Müdigkeitsindex</div><div class="mini-text" id="miniFocus"></div></div></div>'
     + '<div class="mini-topic"><select id="miniTopic" aria-label="Thema"></select><input id="miniNew" maxlength="60" placeholder="Neues Thema, Enter" aria-label="Neues Thema"></div>'
+    + '<div class="mini-topic"><select id="miniPause" aria-label="Pause"><option value="">Pause …</option><option value="15">Pause 15 min</option><option value="30">Pause 30 min</option><option value="60">Pause 60 min</option><option value="0">Pause bis ich weitermache</option></select><button type="button" class="btn small primary" id="miniResume" hidden>Weiter</button></div>'
     + '</div>';
   const sel = d.getElementById('miniTopic'), inp = d.getElementById('miniNew');
   sel.addEventListener('change', () => { const t = hist.topics.get(sel.value); setTopic(t ? t.name : ''); });
   inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && cleanTopicName(inp.value)) { setTopic(inp.value); inp.value = ''; } });
+  const ps = d.getElementById('miniPause');
+  ps.addEventListener('change', () => { if (ps.value !== '') startPause(Number(ps.value)); ps.value = ''; });
+  d.getElementById('miniResume').addEventListener('click', () => resumePause());
   miniTopicSig = '';
 }
 function attachMini(win) {
@@ -2060,9 +2194,9 @@ function updateMini() {
   pill.textContent = el.pill.textContent;
   pill.dataset.state = el.pill.dataset.state;
   wrap.dataset.alarm = String(alarm);
-  const level = el.indexLevel.dataset.level || 'none';
+  const level = pause ? 'none' : (el.indexLevel.dataset.level || 'none');
   wrap.dataset.level = level;
-  const num = el.indexNum.textContent;
+  const num = pause ? '-' : el.indexNum.textContent;
   const score = Number(num);
   d.getElementById('miniNum').textContent = num;
   const arc = d.getElementById('miniArc');
@@ -2075,7 +2209,11 @@ function updateMini() {
   else if (setup && setup.phase === 'measure') text = `Monitor einrichten · noch ${el.setupCount.textContent} s`;
   else if (setup && setup.phase === 'grace') text = 'Monitor einrichten · gleich geht es los';
   else if (calibration) text = `Kalibrierung · noch ${el.calibNum.textContent} s`;
+  if (pause) { d.getElementById('miniWord').textContent = pause.reason === 'kamera' ? 'Kamera belegt' : 'Pause'; text = pause.until ? `bis ${pauseUntilText()}` : 'kein Alarm, keine Messung'; }
   d.getElementById('miniText').textContent = text;
+  const running = mode === 'camera' || mode === 'demo';
+  d.getElementById('miniPause').hidden = !running || !!pause;
+  d.getElementById('miniResume').hidden = !pause;
   const sel = d.getElementById('miniTopic');
   const rec = recentTopics(15);
   const sig = rec.map((t) => t.id + t.name).join('|');
@@ -2122,7 +2260,8 @@ function renderHero(now) {
   $('heroEyebrow').textContent = mode === 'demo' ? 'Demo mit simuliertem Gesicht' : 'Live über deine Webcam';
   const m = lastMetrics;
   let p;
-  if (calibration) p = ['Einen Moment, ich ', 'lerne', ' deine Augen.'];
+  if (pause) p = pause.reason === 'kamera' ? ['Kamera ', 'belegt', ', ich warte.'] : (pause.until ? ['', 'Pause', ` bis ${pauseUntilText()}.`] : ['Gerade ', 'Pause', '.']);
+  else if (calibration) p = ['Einen Moment, ich ', 'lerne', ' deine Augen.'];
   else if (setup && setup.phase !== 'intro' && setup.phase !== 'result') p = ['Schau auf den ', 'Monitor', ', den du einrichtest.'];
   else if (!engine) p = ['Messung ', 'startet', '.'];
   else if (engine.alarm) p = ['', 'Augen auf!', ''];
@@ -2137,6 +2276,7 @@ function renderHero(now) {
 }
 function render(now) {
   renderHero(now);
+  if (pause) { setPill(pauseLabel(), 'idle'); renderTopicLive(); updateMini(); return; }
   if (mode === 'camera' || mode === 'demo') {
     if (calibration) setPill('Kalibrierung', 'busy');
     else if (setup && setup.phase !== 'intro' && setup.phase !== 'result') setPill('Monitor einrichten', 'busy');
@@ -2464,7 +2604,7 @@ document.querySelectorAll('dialog.legal').forEach((d) => d.addEventListener('cli
  *  Verlauf: Minuten-Zusammenfassungen, Ereignisse, Sitzungen
  *  Immer im Arbeitsspeicher, mit Einwilligung zusätzlich in IndexedDB.
  * ------------------------------------------------------------------ */
-const HIST_TYPES = { micro: 'Sekundenschlaf', long: 'Langer Lidschluss', yawn: 'Gähnen', nod: 'Kopf abgesackt', tired: 'Pause empfohlen', falsealarm: 'Fehlalarm korrigiert', throttled: 'Erkennung gebremst' };
+const HIST_TYPES = { pause: 'Pause', micro: 'Sekundenschlaf', long: 'Langer Lidschluss', yawn: 'Gähnen', nod: 'Kopf abgesackt', tired: 'Pause empfohlen', falsealarm: 'Fehlalarm korrigiert', throttled: 'Erkennung gebremst' };
 const HIST_DB = 'wachblick-verlauf';
 const HIST_STORES = ['minutes', 'events', 'sessions', 'topics', 'spans', 'blocks'];
 const KEEP_DEFAULT = 90;
@@ -2574,8 +2714,9 @@ function recMaybeFlush(force) {
 }
 function recEvent(type, extra = {}) {
   if (!recState.sid) return null;
-  const ts = Date.now();
-  const r = { id: `${ts}-${type}`, ts, type, sid: recState.sid, ...extra };
+  const { ts: tsGiven, ...rest } = extra;
+  const ts = tsGiven ?? Date.now();
+  const r = { id: `${ts}-${type}`, ts, type, sid: recState.sid, ...rest };
   hist.put('events', r);
   scheduleHistRender();
   return r.id;
@@ -3201,7 +3342,7 @@ if (consent.history) {
  * ------------------------------------------------------------------ */
 const FOCUS = { attnMax: 30, absentMs: 120000, awayMs: 60000, minMs: 120000, fatigueHoldMs: 180000 };
 const TOPIC_MAX = 60;
-const END_REASONS = { abwesend: 'abwesend', abgewandt: 'woanders hingeschaut', thema: 'Themenwechsel', stopp: 'Messung beendet' };
+const END_REASONS = { abwesend: 'abwesend', abgewandt: 'woanders hingeschaut', thema: 'Themenwechsel', stopp: 'Messung beendet', pause: 'Pause' };
 
 /** Reine Logik: zerlegt den Messverlauf in Fokusblöcke. */
 class FocusTracker {
@@ -3453,6 +3594,14 @@ el.btnSetup2.addEventListener('click', () => openSetup('monitor'));
 $('btnKeyboard').addEventListener('click', () => openSetup('tastatur'));
 el.btnZonesClear.addEventListener('click', () => { if (!zones.length) return; zones.splice(0); saveZones(); renderZones(); addLog('Weitere Monitore entfernt', '', 'info'); });
 el.btnMini.addEventListener('click', toggleMini);
+$('btnPause').addEventListener('click', () => {
+  if (pause) { resumePause(); return; }
+  const d = $('dlgPause');
+  d.returnValue = '';
+  d.addEventListener('close', () => { if (d.returnValue !== '') startPause(Number(d.returnValue)); }, { once: true });
+  d.showModal();
+});
+$('pauseResume').addEventListener('click', () => resumePause());
 el.setupGo.addEventListener('click', () => { initAudio(); setupMeasure(); });
 el.setupMore.addEventListener('click', () => { setup = { kind: 'monitor', phase: 'intro', n: zones.filter((z) => !z.learned).length + 2 }; renderSetup(); });
 el.setupDone.addEventListener('click', closeSetup);
@@ -3479,7 +3628,7 @@ if (consent.history) { renderTopicChoices(); renderTopicLive(); } else validateT
 
 // Für Tests in der Browser-Konsole
 window.Wachblick = {
-  FatigueEngine, measure, blendValues, alarmFactor, demoSample, zones, settings, learnFromInfo, hist, sanitizeImport, recMaybeFlush, FocusTracker, attentionSpan, FOCUS, setTopic, focus, spanTick, topicStats, HistoryStore, attachMini, applyFarbwelt,
+  FatigueEngine, measure, blendValues, alarmFactor, startPause, resumePause, get pause() { return pause; }, _track: () => stream && stream.getVideoTracks()[0], demoSample, zones, settings, learnFromInfo, hist, sanitizeImport, recMaybeFlush, FocusTracker, attentionSpan, FOCUS, setTopic, focus, spanTick, topicStats, HistoryStore, attachMini, applyFarbwelt,
   get state() {
     return { mode, calib, delegateUsed, sourceUsed, frameMode, fps, throttled, lastSample, pose: engine?.pose,
       metrics: engine ? engine.metrics(performance.now()) : null, alarm: engine?.alarm ?? false, events: eventHistory.slice(), consent: consent.rec };
