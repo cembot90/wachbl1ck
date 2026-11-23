@@ -1,0 +1,106 @@
+WACHBL1CK 2.4: Müdigkeitserkennung per Webcam
+================================================
+
+Inhalt dieses Ordners
+---------------------
+wachbl1ck.html                 Die App (eine einzige Datei)
+vendor/mediapipe/              Erkennungsbibliothek MediaPipe Tasks Vision 0.10.21 (Google, Apache 2.0)
+vendor/models/                 Gesichtsmodell face_landmarker.task (Google, Apache 2.0)
+vendor/LICENSE-MediaPipe.txt   Lizenztext
+vendor/fonts/                  Lizenztexte der Schriften Fredoka und Atkinson Hyperlegible (SIL OFL 1.1)
+DESIGN.md                      Gemeinsames Design-Schema für alle Apps (wie YEM1N)
+
+
+Starten: drei Wege
+-------------------
+1) Einfach: wachbl1ck.html per Doppelklick in Chrome oder Edge öffnen.
+   Der Ordner "vendor" wird dabei NICHT genutzt (Browser erlauben das bei
+   lokalen Dateien nicht). Wachbl1ck fragt deshalb vor dem Start, ob es die
+   Erkennungsdateien aus dem Internet laden darf (jsDelivr und Google).
+
+2) Datenschutzfreundlich auf dem eigenen Rechner: im Ordner ein Terminal öffnen und
+       python3 -m http.server 8000
+   ausführen, dann http://localhost:8000/wachbl1ck.html aufrufen.
+   Alles kommt dann aus dem Ordner "vendor", es gibt keine Verbindung zu Dritten.
+   (Windows: Python von python.org installieren, Befehl dort "py -m http.server 8000".)
+
+3) Für mehrere Nutzer: den ganzen Ordner auf einen Webserver legen (HTTPS).
+   Auch dann kommt alles aus "vendor". Impressum und Datenschutzerklärung
+   sind ausgefüllt (Cem Aras). Wird Wachbl1ck über einen Webserver angeboten,
+   gehört in die Datenschutzerklärung noch ein Abschnitt zum Hoster
+   (Abschnitt 6 "Weitergabe der App" anpassen).
+
+
+Damit es im Hintergrund zuverlässig läuft
+-----------------------------------------
+- Chrome oder Edge verwenden.
+- In Wachbl1ck "Mini-Fenster" öffnen (bleibt über allen Fenstern, wird bei Alarm rot).
+- Chrome: Einstellungen > Leistung > Energiesparmodus aus und die Adresse
+  von Wachbl1ck unter "Diese Websites immer aktiv lassen" eintragen
+  (geht mit http://localhost:8000 oder einer Server-Adresse, nicht mit file://).
+- Edge: Einstellungen > System und Leistung > Schlafende Tabs > Ausnahme eintragen.
+
+
+Mehrere Monitore
+----------------
+Nach dem Start 5 Sekunden auf den Hauptmonitor schauen (Kalibrierung).
+Dann "Monitor einrichten" und den Anweisungen folgen: ein Ton = Messung
+beginnt, zwei Töne = fertig. Kommt trotzdem ein Fehlalarm, in der
+Alarmanzeige oder in der Ereignisliste auf "Fehlalarm" klicken.
+Wachbl1ck merkt sich dann diese Blickrichtung.
+
+
+Verlauf (Logs) speichern, exportieren, einlesen
+-----------------------------------------------
+- Während einer Messung mit Kamera schreibt Wachbl1ck jede Minute eine
+  Zusammenfassung (Index, PERCLOS, Lidschläge, Lidschlussdauer) und alle
+  Ereignisse (Sekundenschlaf, lange Lidschlüsse, Gähnen, Pausen) mit.
+- "Verlauf auf diesem Gerät speichern" einschalten, dann bleibt er im Browser
+  (IndexedDB), standardmäßig 90 Tage. Ohne Häkchen ist er beim Schließen weg.
+- "Exportieren (JSON)" sichert alles in eine Datei. "Einlesen ..." liest so eine
+  Datei wieder ein und führt sie mit dem vorhandenen Verlauf zusammen
+  (doppelte Minuten werden nicht doppelt gezählt). So lässt sich der Verlauf
+  auch auf einen anderen Rechner oder Browser umziehen.
+- "CSV Minuten" und "CSV Ereignisse" öffnen direkt in Excel.
+- Ansichten: Tagesverlauf, Tage im Zeitraum, Müdigkeit nach Uhrzeit,
+  dazu eine Tabelle. "Beispielverlauf ansehen" zeigt erfundene Daten zum
+  Ausprobieren; die werden nie gespeichert.
+- Der Verlauf liegt je Browser und je Adresse getrennt: file://, localhost
+  und ein Webserver haben jeweils ihren eigenen Speicher. Zum Umziehen
+  exportieren und dort einlesen.
+
+
+Themen und Aufmerksamkeit
+-------------------------
+- Unter der Kamera "Woran arbeitest du?" ein Thema eintragen oder eines der
+  zuletzt genutzten anklicken. Wechseln geht auch im Mini-Fenster
+  (Auswahlliste oder neues Thema eintippen und Enter).
+- Wachbl1ck kann nicht sehen, welches Programm offen ist. Das Thema wählst du,
+  die Kamera misst, wie lange du dabei wach am Bildschirm bist:
+  Gesicht im Bild, Blick auf einen Monitor, Augen offen, Index unter 30.
+- Fokusblock: beginnt, sobald du wach auf einen Monitor schaust. Er endet,
+  wenn du länger als 2 Minuten weg bist, länger als 1 Minute woanders
+  hinschaust oder das Thema wechselst. Blöcke unter 2 Minuten zählen nicht.
+- Aufmerksamkeitsspanne: Minuten vom Blockbeginn, bis der Index 3 Minuten
+  lang bei 30 oder höher bleibt. Angezeigt wird der Median, sobald es
+  mindestens 3 solche Blöcke ab 10 Minuten gibt.
+- Im Verlauf: "Themen und Aufmerksamkeit" mit Zeit am Thema, wacher Zeit und
+  Aufmerksamkeitsspanne je Thema. "CSV Fokusblöcke" exportiert jeden Block,
+  "CSV Minuten" enthält jetzt eine Spalte Thema.
+- Exporte haben jetzt Format 2. Ältere Exporte (Format 1) lassen sich weiter
+  einlesen. Gleichnamige Themen werden beim Einlesen zusammengeführt.
+
+
+Design
+------
+Wachbl1ck folgt dem Design-Schema von YEM1N: Navy und Gelb, Schriften
+Fredoka und Atkinson Hyperlegible, große Rundungen, Glas-Effekte aus.
+Unter Einstellungen > Farbwelt lässt sich auf Rosa umschalten.
+Die Farben, Schriften und Bausteine stehen in DESIGN.md und gelten für
+alle weiteren Apps.
+
+
+Hinweis
+-------
+Wachbl1ck ist kein Medizinprodukt und kein Sicherheitssystem.
+Die Rechtstexte sind Vorlagen und ersetzen keine Rechtsberatung.
