@@ -5,7 +5,7 @@ ohne Konto und ohne Cloud.
 
 - Erkennt Sekundenschlaf und schlägt Alarm
 - Müdigkeitsindex aus Lidschlüssen, Gähnen und Kopfhaltung
-- Mehrere Monitore einrichten, Fehlalarme lernen
+- Mehrere Monitore und die Tastatur einrichten, Fehlalarme lernen
 - Themen, Fokusblöcke und Aufmerksamkeitsspanne
 - Verlauf speichern, als JSON oder CSV exportieren und wieder einlesen
 - Mini-Fenster, das über allen Fenstern liegt

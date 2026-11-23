@@ -1,4 +1,4 @@
-WACHBL1CK 2.4: Müdigkeitserkennung per Webcam
+WACHBL1CK 2.5: Müdigkeitserkennung per Webcam
 ================================================
 
 Inhalt dieses Ordners
@@ -55,6 +55,20 @@ Dann "Monitor einrichten" und den Anweisungen folgen: ein Ton = Messung
 beginnt, zwei Töne = fertig. Kommt trotzdem ein Fehlalarm, in der
 Alarmanzeige oder in der Ereignisliste auf "Fehlalarm" klicken.
 Wachbl1ck merkt sich dann diese Blickrichtung.
+
+
+Blick auf die Tastatur
+----------------------
+Von einer Kamera über dem Monitor aus sehen die Augen beim Blick auf die
+Tastatur halb geschlossen aus. Dafür unter "Monitore und Tastatur" auf
+"Tastatur einrichten" klicken, auf die Tastatur schauen und ein paar Wörter
+tippen, bis zwei Töne kommen. Danach:
+- schlägt der Alarm erst an, wenn die Augen wirklich zu sind,
+- zählt der Blick nach unten nicht als Müdigkeit (Anzeige "Blick auf die
+  Tastatur"), die Zeit zählt aber als wach am Thema.
+Wer das nicht einrichtet: Beim ersten Fehlalarm auf "Fehlalarm" klicken.
+Waren die Augen dabei nur halb zu, lernt Wachbl1ck daraus den Blick nach
+unten, statt die Empfindlichkeit insgesamt zu senken.
 
 
 Verlauf (Logs) speichern, exportieren, einlesen

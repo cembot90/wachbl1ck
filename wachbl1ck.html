@@ -539,7 +539,7 @@ body.mini::before { display: none; }
           <ol>
             <li>Kamera starten und den Zugriff erlauben.</li>
             <li>5 Sekunden entspannt auf den Hauptmonitor schauen. So lernt Wachbl1ck deine normale Augenöffnung.</li>
-            <li>Mehrere Monitore? Danach jeden weiteren Monitor einmal einrichten.</li>
+            <li>Mehrere Monitore oder oft der Blick auf die Tastatur? Danach einmal einrichten.</li>
           </ol>
           <div class="row">
             <button type="button" class="btn cta" id="btnStart">Kamera starten</button>
@@ -602,14 +602,15 @@ body.mini::before { display: none; }
       </div>
 
       <div class="panel stack" aria-label="Monitore">
-        <h2>Monitore</h2>
-        <p class="help">Für jeden Monitor merkt sich Wachbl1ck die Blickrichtung und deine normale Augenöffnung dort. Seitlich auf einen Monitor zu schauen, löst so keinen Alarm aus.</p>
+        <h2>Monitore und Tastatur</h2>
+        <p class="help">Für jeden Monitor merkt sich Wachbl1ck die Blickrichtung und deine normale Augenöffnung dort. Seitlich auf einen Monitor zu schauen, löst so keinen Alarm aus. Schaust du oft auf die Tastatur, richte sie einmal ein: Von oben gesehen wirken die Augen dabei halb geschlossen.</p>
         <ul class="zones" id="zoneList"></ul>
         <div class="row-btns">
           <button type="button" class="btn small primary" id="btnSetup2" disabled>Monitor einrichten</button>
+          <button type="button" class="btn small" id="btnKeyboard" disabled>Tastatur einrichten</button>
           <button type="button" class="btn small" id="btnZonesClear">Alle weiteren entfernen</button>
         </div>
-        <p class="help" id="setupHint">Erst die Kamera starten, dann kannst du Monitore einrichten.</p>
+        <p class="help" id="setupHint">Erst die Kamera starten, dann kannst du Monitore und die Tastatur einrichten.</p>
         <label class="check" for="pauseAway"><input type="checkbox" id="pauseAway" checked><span>Pausieren, wenn ich woanders hinschaue<small>Wer mehr als 25° neben jeden eingerichteten Monitor schaut, wird nicht als schlafend gewertet.</small></span></label>
       </div>
     </section>
@@ -796,7 +797,7 @@ body.mini::before { display: none; }
       <ul>
         <li>Kamera etwa auf Augenhöhe, Gesicht von vorn beleuchtet. Gegenlicht vom Fenster stört.</li>
         <li>Mehrere Monitore: jeden Monitor einmal einrichten. Kommt trotzdem ein Fehlalarm, tippe auf „Fehlalarm“. Wachbl1ck merkt sich dann diese Blickrichtung.</li>
-        <li>Der Blick auf die Tastatur sieht für die Kamera aus wie halb geschlossene Augen. Gibt es dabei Fehlalarme, die Empfindlichkeit senken.</li>
+        <li>Der Blick auf die Tastatur sieht für die Kamera aus wie halb geschlossene Augen. Dafür einmal „Tastatur einrichten“. Kommt trotzdem ein Fehlalarm, auf „Fehlalarm“ tippen, dann lernt Wachbl1ck den Blick nach unten.</li>
         <li>Nach einer Pause oder wenn sich das Licht ändert: neu kalibrieren.</li>
       </ul>
     </div>
@@ -820,7 +821,7 @@ body.mini::before { display: none; }
     <button type="button" class="linkbtn" data-open="dlgPrivacy">Datenschutz</button>
     <button type="button" class="linkbtn" data-open="dlgImprint">Impressum</button>
     <button type="button" class="linkbtn" data-open="dlgStorage">Speicher-Einstellungen</button>
-    <span>Wachbl1ck 2.4</span>
+    <span>Wachbl1ck 2.5</span>
   </nav>
 </div>
 
@@ -895,7 +896,7 @@ body.mini::before { display: none; }
     <p>Messwerte, Müdigkeitsindex und Ereignisliste liegen nur im Arbeitsspeicher und sind beim Schließen der Seite gelöscht. Ich erhalte keine dieser Daten.</p>
 
     <h3>3. Speicherung von Einstellungen im Browser</h3>
-    <p>Nur wenn du zustimmst, speichert Wachbl1ck im Local Storage deines Browsers: Empfindlichkeit, Alarmzeit, Ton- und Benachrichtigungseinstellung sowie die eingerichteten Monitor-Blickrichtungen (Winkel und relative Augenöffnung). Local Storage ist eine Cookie-ähnliche Technik und wird rechtlich wie Cookies behandelt.</p>
+    <p>Nur wenn du zustimmst, speichert Wachbl1ck im Local Storage deines Browsers: Empfindlichkeit, Alarmzeit, Ton- und Benachrichtigungseinstellung, Farbwelt, gewähltes Thema, die eingerichteten Monitor-Blickrichtungen (Winkel und relative Augenöffnung) sowie die eingerichtete Tastatur (Augenöffnung und Blickwerte beim Blick nach unten). Local Storage ist eine Cookie-ähnliche Technik und wird rechtlich wie Cookies behandelt.</p>
     <p>Rechtsgrundlage ist deine Einwilligung nach § 25 Abs. 1 TDDDG und Art. 6 Abs. 1 lit. a DSGVO. Deine Entscheidung selbst (ja oder nein) wird gespeichert, damit Wachbl1ck nicht erneut fragt. Das ist nach § 25 Abs. 2 Nr. 2 TDDDG ohne Einwilligung zulässig. Die Daten bleiben gespeichert, bis du die Einwilligung widerrufst oder deine Browserdaten löschst. Widerrufen und alles löschen kannst du jederzeit unter „Speicher-Einstellungen“ unten auf der Seite.</p>
 
     <h3>4. Verlauf (freiwillig)</h3>
@@ -1041,7 +1042,14 @@ const store = {
 /* ------------------------------------------------------------------ *
  *  Messung aus den Gesichtspunkten
  * ------------------------------------------------------------------ */
-function measure(lm, W, H) {
+/** Lidschluss und Blick nach unten aus den Blendshapes von MediaPipe (0 bis 1), sonst null. */
+function blendValues(cats) {
+  if (!cats || !cats.length) return { blink: null, lookDown: null };
+  const g = (n) => { const c = cats.find((x) => x.categoryName === n); return c ? c.score : null; };
+  const avg = (a, b) => (a == null || b == null ? null : (a + b) / 2);
+  return { blink: avg(g('eyeBlinkLeft'), g('eyeBlinkRight')), lookDown: avg(g('eyeLookDownLeft'), g('eyeLookDownRight')) };
+}
+function measure(lm, W, H, cats) {
   const P = (i) => [lm[i].x * W, lm[i].y * H];
   const eye = (idx) => {
     const p = idx.map(P);
@@ -1060,7 +1068,7 @@ function measure(lm, W, H) {
   const span = lm[FACE_EDGE_L].x - lm[FACE_EDGE_R].x;
   const rel = (lm[NOSE].x - lm[FACE_EDGE_R].x) / (Math.abs(span) < 1e-6 ? 1e-6 : span);
   const yaw = Math.asin(clamp((rel - 0.5) * 2, -1, 1)) * 180 / Math.PI;
-  return { face: true, ear, mar, head, yaw };
+  return { face: true, ear, mar, head, yaw, ...blendValues(cats) };
 }
 
 /* ------------------------------------------------------------------ *
@@ -1095,7 +1103,22 @@ class FatigueEngine {
   }
   closedFor(t) { return this.closed ? t - this.closedStart : 0; }
 
-  push({ t, face, ear, mar, head, yaw }) {
+  /** Ab dieser Augenöffnung (Anteil von normal) schlägt der Alarm an. Ohne Tastatur gleich der normalen Schwelle. */
+  deepFactor() {
+    const kb = this.settings.keyboard;
+    return kb ? Math.min(this.settings.closeFactor, kb.earRatio * 0.7) : this.settings.closeFactor;
+  }
+  /** Blick auf die Tastatur: Blick deutlich nach unten, Lider aber nicht ganz zu. Nur mit eingerichteter Tastatur. */
+  isGlance(ear, blink, lookDown, ratioZone) {
+    const kb = this.settings.keyboard;
+    if (!kb || blink == null || lookDown == null) return false;
+    if (ear < this.calib.earOpen * ratioZone * this.deepFactor()) return false;   // ganz zu ist nie ein Blick nach unten
+    const lookMin = Math.max(0.25, (kb.lookDown ?? 0.5) * 0.6);
+    const blinkMax = Math.min(0.85, Math.max(0.5, (kb.blink ?? 0.5) + 0.2));
+    return lookDown >= lookMin && blink <= blinkMax;
+  }
+
+  push({ t, face, ear, mar, head, yaw, blink = null, lookDown = null }) {
     const ev = [];
     const dt = this.lastT === null ? 0 : Math.min(t - this.lastT, 250);
     this.lastT = t;
@@ -1114,7 +1137,7 @@ class FatigueEngine {
     const dYaw = (yaw ?? this.calib.yawBase) - this.calib.yawBase;
     const dPitch = (head - this.calib.headBase) * PITCH_SCALE;
     const zi = this.zoneInfo(dYaw, dPitch);
-    this.pose = { dYaw, dPitch, zone: zi.zone, away: zi.away };
+    this.pose = { dYaw, dPitch, zone: zi.zone, away: zi.away, glance: false };
 
     if (zi.away) {
       // Blick neben alle Monitore: Augenmessung pausiert, kein Alarm
@@ -1128,21 +1151,33 @@ class FatigueEngine {
     this.faceTime += dt;
     this.earS = this.earS === null ? ear : (this.earS + ear) / 2;
     const thr = this.thr = this.calib.earOpen * zi.ratio * this.settings.closeFactor;
+    const deepThr = this.calib.earOpen * zi.ratio * this.deepFactor();
     const mouthWide = mar > YAWN_MAR * 0.75;
+    const glance = this.isGlance(this.earS, blink, lookDown, zi.ratio);
+    this.pose.glance = glance;
 
-    if (!this.closed && this.earS < thr) {
+    if (glance) {
+      // Blick auf die Tastatur: zählt weder als Lidschluss noch als abgewandt
+      if (this.closed) ev.push(...this._abortClosure(t));
+      this.deepSince = null;
+    } else if (!this.closed && this.earS < thr) {
       this.closed = true; this.closedStart = t; this.closedYawn = mouthWide;
-      this.cl = { ears: [], yaws: [], pitches: [] };
+      this.cl = { ears: [], yaws: [], pitches: [], blinks: [], looks: [] };
     } else if (this.closed && this.earS > thr * 1.12) {
       ev.push(...this._endClosure(t));
     }
     if (this.closed) {
       this.cl.ears.push(ear); this.cl.yaws.push(dYaw); this.cl.pitches.push(dPitch);
+      if (blink != null) this.cl.blinks.push(blink);
+      if (lookDown != null) this.cl.looks.push(lookDown);
       if (mouthWide) this.closedYawn = true;     // Augen zukneifen beim Gähnen ist kein Sekundenschlaf
-      if (!this.alarm && !this.closedYawn && t - this.closedStart >= this.settings.microsleepSec * 1000) {
+      // Alarm nur, solange die Augen tief geschlossen sind (ohne Tastatur dieselbe Schwelle wie sonst)
+      if (this.earS < deepThr) this.deepSince = this.deepSince ?? (deepThr === thr ? this.closedStart : t);
+      else if (this.earS > deepThr * 1.12) this.deepSince = null;
+      if (!this.alarm && !this.closedYawn && this.deepSince != null && t - this.deepSince >= this.settings.microsleepSec * 1000) {
         this.alarm = true; ev.push({ type: 'alarm-on', t });
       }
-    }
+    } else this.deepSince = null;
 
     // Gähnen
     if (mar > YAWN_MAR) {
@@ -1166,7 +1201,7 @@ class FatigueEngine {
       this.headDown = false; this.headNormalT = t;
     }
 
-    this.samples.push({ t, dt, face: true, away: false, closed: this.closed && !this.closedYawn, ear: this.earS, thr });
+    this.samples.push({ t, dt, face: true, away: false, down: glance, closed: this.closed && !this.closedYawn, ear: this.earS, thr });
     this._trim(t);
     return ev;
   }
@@ -1174,18 +1209,20 @@ class FatigueEngine {
   _closureInfo() {
     const c = this.cl;
     if (!c || !c.ears.length) return null;
-    return { dYaw: median(c.yaws), dPitch: median(c.pitches), earMed: median(c.ears) };
+    return { dYaw: median(c.yaws), dPitch: median(c.pitches), earMed: median(c.ears),
+      blink: c.blinks && c.blinks.length ? median(c.blinks) : null, lookDown: c.looks && c.looks.length ? median(c.looks) : null };
   }
   _endClosure(tEnd) {
     const ev = [];
     const dur = tEnd - this.closedStart;
     const info = this._closureInfo();
-    this.closed = false; this.cl = null;
+    this.closed = false; this.cl = null; this.deepSince = null;
+    this.alarmed = this.alarm;
     if (this.alarm) { this.alarm = false; ev.push({ type: 'alarm-off', t: tEnd }); }
     if (dur < 60) return ev; // Rauschen
     let kind = 'blink';
     if (this.closedYawn) kind = 'yawnclose';
-    else if (dur >= this.settings.microsleepSec * 1000) kind = 'micro';
+    else if (this.alarmed || (dur >= this.settings.microsleepSec * 1000 && this.deepFactor() === this.settings.closeFactor)) kind = 'micro';
     else if (dur >= 500) kind = 'long';
     this.closures.push({ t: tEnd, dur, kind });
     if (kind === 'micro') this.micro.push({ t: tEnd, dur });
@@ -1194,7 +1231,7 @@ class FatigueEngine {
   }
   _abortClosure(t) {
     const ev = [];
-    this.closed = false; this.cl = null;
+    this.closed = false; this.cl = null; this.deepSince = null;
     if (this.alarm) { this.alarm = false; ev.push({ type: 'alarm-off', t }); }
     return ev;
   }
@@ -1221,7 +1258,7 @@ class FatigueEngine {
   metrics(t) {
     let faceMs = 0, closedMs = 0;
     for (const s of this.samples) {
-      if (s.t < t - 60000 || !s.face || s.away) continue;
+      if (s.t < t - 60000 || !s.face || s.away || s.down) continue;
       faceMs += s.dt; if (s.closed) closedMs += s.dt;
     }
     const perclos = faceMs >= 3000 ? closedMs / faceMs : null;
@@ -1395,7 +1432,7 @@ async function loadLandmarker(src) {
   const opts = (delegate) => ({
     baseOptions: { modelAssetPath: src.model, delegate },
     runningMode: 'VIDEO', numFaces: 1,
-    outputFaceBlendshapes: false, outputFacialTransformationMatrixes: false,
+    outputFaceBlendshapes: true, outputFacialTransformationMatrixes: false,
   });
   try {
     const l = await FaceLandmarker.createFromOptions(fileset, opts('GPU'));
@@ -1521,7 +1558,7 @@ function detectFrom(source, W, H) {
   }
   const lm = res && res.faceLandmarks && res.faceLandmarks[0];
   lastLm = lm || null;
-  handleSample(now, lm ? measure(lm, W, H) : { face: false });
+  handleSample(now, lm ? measure(lm, W, H, res.faceBlendshapes && res.faceBlendshapes[0] && res.faceBlendshapes[0].categories) : { face: false });
 }
 
 function detectionBroken(e) {
@@ -1581,9 +1618,9 @@ function updateButtons() {
   el.btnCalib.hidden = mode !== 'camera';
   const canSetup = mode === 'camera' && !!calib && !calibration && !setup;
   el.btnSetup.hidden = mode !== 'camera';
-  el.btnSetup.disabled = !canSetup; el.btnSetup2.disabled = !canSetup;
+  el.btnSetup.disabled = !canSetup; el.btnSetup2.disabled = !canSetup; $('btnKeyboard').disabled = !canSetup;
   el.setupHint.hidden = canSetup;
-  el.setupHint.textContent = mode === 'camera' ? 'Nach der Kalibrierung kannst du Monitore einrichten.' : 'Erst die Kamera starten, dann kannst du Monitore einrichten.';
+  el.setupHint.textContent = mode === 'camera' ? 'Nach der Kalibrierung kannst du Monitore und die Tastatur einrichten.' : 'Erst die Kamera starten, dann kannst du Monitore und die Tastatur einrichten.';
   el.btnMini.hidden = !('documentPictureInPicture' in window);
   el.btnMini.textContent = pipWin ? 'Mini-Fenster schließen' : 'Mini-Fenster';
 }
@@ -1640,22 +1677,39 @@ function feedCalibration(now, s) {
 /* ------------------------------------------------------------------ *
  *  Monitore einrichten
  * ------------------------------------------------------------------ */
-function openSetup() {
+function openSetup(kind = 'monitor') {
   if (mode !== 'camera' || !calib || calibration) return;
   setAlarm(false);
-  setup = { phase: 'intro', n: zones.filter((z) => !z.learned).length + 2 };
+  setup = { kind, phase: 'intro', n: zones.filter((z) => !z.learned).length + 2 };
   renderSetup(); updateButtons();
 }
 function renderSetup() {
   if (!setup) { el.setup.hidden = true; updateMini(); return; }
   el.setup.hidden = false;
   const p = setup.phase;
-  el.setupTitle.textContent = `Monitor ${setup.n} einrichten`;
+  const kbd = setup.kind === 'tastatur';
+  el.setupTitle.textContent = kbd ? 'Tastatur einrichten' : `Monitor ${setup.n} einrichten`;
   el.setupCount.hidden = p !== 'measure' && p !== 'grace';
   el.setupGo.hidden = p !== 'intro';
-  el.setupMore.hidden = p !== 'result';
+  el.setupMore.hidden = p !== 'result' || kbd;
   el.setupDone.hidden = p !== 'result';
   el.setupCancel.hidden = p === 'result';
+  if (kbd) {
+    const kb = settings.keyboard;
+    el.setupText.textContent =
+      p === 'intro' ? 'Klick auf „Messen“, schau dann auf deine Tastatur und tipp ein paar Wörter, so wie beim Arbeiten. Bleib dabei, bis zwei kurze Töne kommen (etwa 6 Sekunden).'
+      : p === 'grace' ? 'Jetzt auf die Tastatur schauen und tippen.'
+      : p === 'measure' ? (setup.noFace ? 'Die Kamera sieht dein Gesicht gerade nicht. Das ist in Ordnung, dann gibt es beim Tippen auch keinen Alarm.' : 'Messe … bitte weiter auf die Tastatur schauen und tippen.')
+      : setup.result && kb
+      ? (kb.earRatio * 0.7 >= settings.closeFactor
+        ? `Gespeichert: Deine Augen bleiben beim Blick auf die Tastatur gut offen (${nf0.format(kb.earRatio * 100)} %). Wachbl1ck erkennt den Blick nach unten jetzt trotzdem und wertet ihn nicht als Müdigkeit.`
+        : `Gespeichert: Beim Blick auf die Tastatur sind deine Augen zu ${nf0.format(kb.earRatio * 100)} % offen. Wachbl1ck schlägt jetzt erst Alarm, wenn sie wirklich zu sind, und wertet den Blick nach unten nicht als Müdigkeit.`)
+      : 'Die Kamera hat dein Gesicht beim Blick auf die Tastatur nicht gesehen. Dann gibt es dabei auch keinen Alarm, einrichten musst du nichts.';
+    if (p === 'grace') el.setupCount.textContent = '…';
+    if (p === 'measure') el.setupCount.textContent = String(Math.max(1, Math.ceil((SETUP_MS - setup.faceMs) / 1000)));
+    updateMini();
+    return;
+  }
   if (p === 'intro') {
     el.setupText.textContent = 'Klick auf „Messen“ und schau dann auf die Mitte dieses Monitors. Bleib dort, bis zwei kurze Töne kommen (etwa 6 Sekunden). Ein Ton zeigt den Beginn der Messung an.';
   } else if (p === 'grace') {
@@ -1682,7 +1736,7 @@ function setupMeasure() {
 function feedSetup(now, s) {
   if (setup.phase === 'grace') {
     if (now - setup.t0 >= SETUP_GRACE_MS) {
-      Object.assign(setup, { phase: 'measure', t0: now, lastT: now, faceMs: 0, ears: [], yaws: [], pitches: [], noFace: false });
+      Object.assign(setup, { phase: 'measure', t0: now, lastT: now, faceMs: 0, ears: [], yaws: [], pitches: [], blinks: [], looks: [], noFace: false });
       tone(660, 0, 0.14, 0.14, 'sine');
       renderSetup();
     }
@@ -1697,6 +1751,8 @@ function feedSetup(now, s) {
     setup.ears.push(s.ear);
     setup.yaws.push(s.yaw - calib.yawBase);
     setup.pitches.push((s.head - calib.headBase) * PITCH_SCALE);
+    if (s.blink != null) setup.blinks.push(s.blink);
+    if (s.lookDown != null) setup.looks.push(s.lookDown);
   }
   if (setup.faceMs >= SETUP_MS) finishSetup(true);
   else if (now - setup.t0 > SETUP_MS + 5000) finishSetup(false);
@@ -1704,6 +1760,24 @@ function feedSetup(now, s) {
 }
 function finishSetup(ok) {
   tone(880, 0, 0.12, 0.14, 'sine'); tone(880, 0.2, 0.12, 0.14, 'sine');
+  if (setup.kind === 'tastatur') {
+    setup.result = null;
+    if (ok) {
+      settings.keyboard = {
+        earRatio: clamp(median(setup.ears) / calib.earOpen, 0.1, 1.2),
+        dPitch: median(setup.pitches),
+        blink: setup.blinks.length ? median(setup.blinks) : null,
+        lookDown: setup.looks.length ? median(setup.looks) : null,
+        learned: false,
+      };
+      saveSettings(); renderZones();
+      setup.result = 'ok';
+      addLog('Tastatur eingerichtet', `Augen dort ${nf0.format(settings.keyboard.earRatio * 100)} % offen`, 'ok');
+    }
+    setup.phase = 'result';
+    renderSetup();
+    return;
+  }
   let zone = null;
   if (ok) {
     const dYaw = median(setup.yaws), dPitch = median(setup.pitches);
@@ -1743,13 +1817,32 @@ function renderZones() {
   zones.forEach((z, i) => mk(z.name, `${dirLabel(z.dYaw, z.dPitch)} · Augen ${nf0.format(z.earRatio * 100)} %`, z.learned, () => {
     zones.splice(i, 1); saveZones(); renderZones(); addLog(`${z.name} entfernt`, '', 'info');
   }));
+  const kb = settings.keyboard;
+  if (kb) mk('Tastatur', `Augen beim Blick nach unten ${nf0.format(kb.earRatio * 100)} % · Alarm erst unter ${nf0.format(Math.min(settings.closeFactor, kb.earRatio * 0.7) * 100)} %`, kb.learned, () => {
+    settings.keyboard = null; saveSettings(); renderZones(); addLog('Tastatur entfernt', '', 'info');
+  });
   el.btnZonesClear.disabled = zones.length === 0;
 }
 
 /* Lernen aus einem Fehlalarm */
-function learnFromInfo(info) {
-  if (!calib || !info || mode !== 'camera') return;
+function learnFromInfo(info, force = false) {
+  if (!calib || !info || (mode !== 'camera' && !force)) return;
   if (Math.abs(info.dYaw) < 10 && Math.abs(info.dPitch) < 10) {
+    const r = info.earMed / calib.earOpen;
+    if (r >= 0.2) {
+      // Augen waren nur halb zu: das war der Blick nach unten, nicht Müdigkeit
+      const old = settings.keyboard;
+      settings.keyboard = {
+        earRatio: clamp(Math.min(old ? old.earRatio : 1, r), 0.1, 1.2),
+        dPitch: old ? old.dPitch : info.dPitch,
+        blink: info.blink ?? (old ? old.blink : null),
+        lookDown: info.lookDown ?? (old ? old.lookDown : null),
+        learned: !old || old.learned,
+      };
+      saveSettings(); renderZones();
+      addLog('Gelernt', `Blick nach unten: Alarm erst, wenn die Augen ganz zu sind`, 'info');
+      return;
+    }
     settings.closeFactor = clamp(Math.round((settings.closeFactor - 0.05) * 100) / 100, 0.4, 0.75);
     saveSettings(); syncSettingsUI();
     addLog('Gelernt', `Empfindlichkeit auf ${nf0.format(settings.closeFactor * 100)} % gesenkt`, 'info');
@@ -2030,6 +2123,7 @@ function renderHero(now) {
   else if (engine.alarm) p = ['', 'Augen auf!', ''];
   else if (mode === 'camera' && now - lastFaceSeen > 600) p = ['Kein Gesicht im ', 'Bild', '.'];
   else if (engine.pose.away) p = ['Gerade ', 'woanders', ' hingeschaut.'];
+  else if (engine.pose.glance) p = ['Blick auf die ', 'Tastatur', '.'];
   else if (!m || !m.warm) p = ['Messung ', 'läuft', '.'];
   else if (m.level === 'muede') p = ['Zeit für eine ', 'Pause', '.'];
   else if (m.level === 'leicht') p = ['Du wirst ', 'müde', '.'];
@@ -2045,6 +2139,7 @@ function render(now) {
     else if (engine.alarm) setPill('Augen auf!', 'alert');
     else if (mode === 'camera' && now - lastFaceSeen > 600) setPill('Kein Gesicht im Bild', 'idle');
     else if (engine.pose.away) setPill('Blick abgewandt · pausiert', 'idle');
+    else if (engine.pose.glance) setPill('Blick auf die Tastatur', 'ok');
     else if (throttled) setPill('Erkennung gebremst', 'warn');
     else if (engine.closedFor(now) > 400) setPill('Augen geschlossen', 'warn');
     else {
@@ -2061,7 +2156,7 @@ function render(now) {
   el.earNow.textContent = faceNow && engine?.earS != null ? nf2.format(engine.earS) : (faceNow ? nf2.format(s.ear) : '-');
   el.thrNow.textContent = engine && !engine.pose.away ? nf2.format(engine.thr) : '-';
   el.headNow.textContent = engine && faceNow ? (engine.headDown ? 'gesenkt' : 'gerade') : '-';
-  el.gazeNow.textContent = engine && faceNow ? (engine.pose.away ? `abgewandt (${dirLabel(engine.pose.dYaw, 0)})` : engine.pose.zone.name) : '-';
+  el.gazeNow.textContent = engine && faceNow ? (engine.pose.away ? `abgewandt (${dirLabel(engine.pose.dYaw, 0)})` : engine.pose.glance ? 'Tastatur' : engine.pose.zone.name) : '-';
 
   if (!engine) { updateMini(); return; }
   const m = engine.metrics(now);
@@ -2139,7 +2234,7 @@ function drawCameraOverlay() {
   const S = stageColors, away = engine?.pose.away;
   octx.lineWidth = Math.max(1.5, W / 300);
   octx.lineJoin = 'round';
-  octx.strokeStyle = engine?.alarm ? S.alert : away ? alpha(S.muted, 0.7) : engine?.closed ? S.warn : S.accent;
+  octx.strokeStyle = engine?.alarm ? S.alert : (away || engine?.pose.glance) ? alpha(S.muted, 0.7) : engine?.closed ? S.warn : S.accent;
   strokeLoop(lastLm, R_EYE_CONTOUR, W, H);
   strokeLoop(lastLm, L_EYE_CONTOUR, W, H);
   octx.strokeStyle = lastSample && lastSample.mar > YAWN_MAR ? S.warn : alpha(S.ink, 0.55);
@@ -2243,6 +2338,7 @@ function drawTrace(now) {
     }
   };
   shade('away', C.awaySoft);
+  shade('down', C.awaySoft);
   shade('closed', C.alertSoft);
 
   // Schwelle (ändert sich je nach Monitor)
@@ -3347,12 +3443,13 @@ el.btnStart.addEventListener('click', startCamera);
 el.btnDemo.addEventListener('click', startDemo);
 el.btnStop.addEventListener('click', () => stopAll(false));
 el.btnCalib.addEventListener('click', () => { if (mode === 'camera') beginCalibration(); });
-el.btnSetup.addEventListener('click', openSetup);
-el.btnSetup2.addEventListener('click', openSetup);
+el.btnSetup.addEventListener('click', () => openSetup('monitor'));
+el.btnSetup2.addEventListener('click', () => openSetup('monitor'));
+$('btnKeyboard').addEventListener('click', () => openSetup('tastatur'));
 el.btnZonesClear.addEventListener('click', () => { if (!zones.length) return; zones.splice(0); saveZones(); renderZones(); addLog('Weitere Monitore entfernt', '', 'info'); });
 el.btnMini.addEventListener('click', toggleMini);
 el.setupGo.addEventListener('click', () => { initAudio(); setupMeasure(); });
-el.setupMore.addEventListener('click', () => { setup = { phase: 'intro', n: zones.filter((z) => !z.learned).length + 2 }; renderSetup(); });
+el.setupMore.addEventListener('click', () => { setup = { kind: 'monitor', phase: 'intro', n: zones.filter((z) => !z.learned).length + 2 }; renderSetup(); });
 el.setupDone.addEventListener('click', closeSetup);
 el.setupCancel.addEventListener('click', closeSetup);
 el.alarmFalse.addEventListener('click', () => {
@@ -3377,7 +3474,7 @@ if (consent.history) { renderTopicChoices(); renderTopicLive(); } else validateT
 
 // Für Tests in der Browser-Konsole
 window.Wachblick = {
-  FatigueEngine, measure, demoSample, zones, hist, sanitizeImport, recMaybeFlush, FocusTracker, attentionSpan, FOCUS, setTopic, focus, spanTick, topicStats, HistoryStore, attachMini, applyFarbwelt,
+  FatigueEngine, measure, blendValues, demoSample, zones, settings, learnFromInfo, hist, sanitizeImport, recMaybeFlush, FocusTracker, attentionSpan, FOCUS, setTopic, focus, spanTick, topicStats, HistoryStore, attachMini, applyFarbwelt,
   get state() {
     return { mode, calib, delegateUsed, sourceUsed, frameMode, fps, throttled, lastSample, pose: engine?.pose,
       metrics: engine ? engine.metrics(performance.now()) : null, alarm: engine?.alarm ?? false, events: eventHistory.slice(), consent: consent.rec };
